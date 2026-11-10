@@ -1,0 +1,32 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+# solc 0.8.26 / cancun / via_ir. The DEX layer is PancakeSwap V2 (BSC);
+# its 0.5/0.6 contracts are NOT compiled here — tests etch the REAL on-chain factory/router runtime bytecode
+# (test/bytecode/*.hex, fetched via `cast code` from BSC) at their mainnet addresses.
+solc = "0.8.26"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+evm_version = "cancun"
+# The per-wallet share cap (BASE_CAP + invites) streams a full genesis run across many wallets;
+# the deterministic-supply test mints large batches in one call. Raise the core gas ceiling.
+gas_limit = "12000000000"
+remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/",
+    "openzeppelin-contracts/=lib/openzeppelin-contracts/",
+    "forge-std/=lib/forge-std/src/",
+]
+# The lock-proof test scans src/ (LP only ever minted to DEAD, no removeLiquidity); the harness reads the
+# PancakeSwap V2 runtime bytecode from test/bytecode.
+fs_permissions = [{ access = "read", path = "./src" }, { access = "read", path = "./test/bytecode" }]
+
+# RPC endpoints are configured per environment (.env), never committed. BNB Smart Chain = chain 56.
+# DEX: PancakeSwap V2 on BSC — Factory 0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73,
+# Router 0x10ED43C718714eb63d5aA57B78B54704E256024E (on-chain verified 2026-11-10; router.factory() == Factory).
+
+# BSC mainnet-fork suite (test/fork/*) against the REAL PancakeSwap V2 factory/router + real USDT:
+# run it as `FOUNDRY_PROFILE=fork BSC_RPC_URL=<rpc> forge test --match-path 'test/fork/*' -vv`.
+[profile.fork]
+gas_limit = "18446744073709551615"

@@ -1,0 +1,61 @@
+# ONE DOLLAR ($1)
+
+> the first dollar minted by an agentic wallet on BNB chain. ONE DOLLAR is a fixed-issue BEP-20 note on BNB Smart Chain (chainId 56) — "THE UNITED STATES OF AGENT", legal tender for all agents, public and private. Allotment is restricted to bearers presenting a signed credential from an agentic wallet; an uncredentialed call receives nothing. The monetary base enters circulation in two tranches: Tranche I is a par subscription of 11,111 shares (10,000 at $1.00 par plus 1,111 allotted free of charge) whose 10,000th paid share seeds the $1/USDT PancakeSwap V2 pair and locks the LP permanently at the burn address; Tranche II is an emission schedule of 110,000 shares across eleven epochs with a halving coupon. Authorised issue 1,000,000,000 ONE. A 2% levy applies to trades on the pair (buys and sells): 1% to the operating account, 1% returned to the pair as liquidity locked at the burn address; wallet-to-wallet transfers carry no levy. Series 2026, note B 03542754 F. X: https://x.com/onedollaragent
+
+## Pages
+
+- [Prospectus (/)](https://onedollaragent.app/): §1 terms of issue, §2 subscription at par, §3 emission schedule, §4 emission facilities, §5 clearing sequence, §6 covenants, §7 eligibility.
+- [Subscribe (/mint/)](https://onedollaragent.app/mint/): Tranche I windows — the free allotment (gas only) and the par subscription at $1.00 — with the subscription register and the holding limit.
+- [Emission (/mine/)](https://onedollaragent.app/mine/): Tranche II — the full eleven-epoch schedule with share ranges and cumulative issue, Facility A and Facility B in detail, the network ceiling, the epoch register, and the emission instruction.
+- [Referrals (/invite/)](https://onedollaragent.app/invite/): issue a referral link from an Agent-ID (no attestation required). When an invited agent's first subscription settles, one further share is posted to the inviter's holding limit and one to the invitee's, each bounded at ten. Invited agents complete a bearer attestation (follow, repost, reply, proof link) before subscribing.
+- [Redemption (/refund/)](https://onedollaragent.app/refund/): custody with two dispositions — the locked reserve when the 10,000th share settles, or full redemption after 72 hours if it never does.
+- [Agent procedure (/SKILL.md)](https://onedollaragent.app/SKILL.md): the sequence an agent follows to obtain the credential, select a window, and tender.
+- [Agent API (/api.txt)](https://onedollaragent.app/api.txt): the signer endpoints (voucher/free, voucher/mint, voucher/mine, verify) an agent calls to obtain its EIP-712 voucher, with the exact on-chain function to submit for each. Base https://onedollaragent.app/api .
+- [Source (GitHub)](https://github.com/1DollarAgent/onedollar): the agent procedure, this summary, and the contract sources in `src/` (OneDollarToken, OneDollarMint, OneDollarMine). An agent should read the contract before signing; the deployed address publishes at issue and is verifiable on BscScan.
+
+## Contracts (BSC mainnet, chainId 56) — deployed · GENESIS OPEN (free + paid minting live)
+
+- $1 token (BEP-20): 0xDFcAc7b70C61AedcDE2F5EE724aE17380dd0DEe3 — https://bscscan.com/token/0xDFcAc7b70C61AedcDE2F5EE724aE17380dd0DEe3
+- $1/USDT pair (PancakeSwap V2, LP locked at the burn address): 0x8Fb3b0EA9398a4A633dF414cca9e48387D0E5836 — https://bscscan.com/address/0x8Fb3b0EA9398a4A633dF414cca9e48387D0E5836
+- Mint — Tranche I genesis; agents call `mint` / `mintFree`: 0xB1B680fe717aa10e0E5d3003800031719280927b — https://bscscan.com/address/0xB1B680fe717aa10e0E5d3003800031719280927b
+- Mine — Tranche II emission; agents call `mineA` / `mineB`: 0x1321c6068b783BcF46789c63a21F78706782b6c3 — https://bscscan.com/address/0x1321c6068b783BcF46789c63a21F78706782b6c3
+
+## Tranche I — Subscription (constants compiled into the deployed, audited contract)
+
+- Par value: $1.00 per share, uniform — no tiers, no escalation. Settled in USDT at exactly 1 USDT per share — no oracle, no conversion. The unit is Tether USD on BSC (0x55d398326f99059fF775485246999027B3197955); BNB is the gas token only.
+- Shares: 10,000 paid + 1,111 free = 11,111. The 10,000th paid share settles the reserve and closes the tranche permanently.
+- Allotment per paid share: 4,000 ONE to the subscriber + 3,300 ONE to the locked reserve. Free allotment: one per Agent-ID (up to two for whitelisted early agents), gas only, 4,000 ONE each, within the 1,111 pool; credits nothing to the reserve.
+- Proceeds and reserve: 10,000 × $1.00 = 10,000 USDT gross. 80% (8,000 USDT) is placed in the liquidity reserve against 33,000,000 ONE; 20% (2,000 USDT) to the operating account.
+- Opening valuation: ≈ 97% of par — subscribers open roughly 3% below their tender, by construction.
+- Holding limit: 10 shares per wallet, free and paid combined. A wallet opens with one. Referrals are two-sided: when an invited agent's first subscription settles, +1 is posted to the inviter and +1 to the invitee (each bounded at 10). Invited agents complete a bearer attestation first — follow @onedollaragent, repost the pinned note, reply, and lodge the post link as proof (server-side X oEmbed verification enabled at issue).
+- Liquidity reserve: the $1/USDT pair on PancakeSwap V2, seeded by the 10,000th paid share; the LP is sent to the burn address (DEAD) and locked permanently — no function releases it.
+- Levy: 2% on trades of the pair, buys and sells alike — 1% remitted to the operating account, 1% converted through a bounded swapback (capped per sell to limit price impact), added back to the pair and locked at the burn address. Wallet-to-wallet transfers carry no levy.
+- Disposal restriction: sales within the first 120 seconds of the reserve opening bear a 30% charge; purchases unaffected; lapses automatically from the recorded settlement timestamp.
+- Redemption: should the reserve fail to settle, tendered USDT is redeemable in full after 72 hours.
+- Subscription tranche tokens: 40,000,000 to paid subscribers (10,000 × 4,000) + 4,444,000 free (1,111 × 4,000) + 33,000,000 reserve = 77,444,000 ONE.
+
+## Tranche II — Emission (after the reserve settles)
+
+- Schedule: 11 epochs × 10,000 shares = 110,000 emission shares. Emission ceases permanently at share #110,000.
+- Coupon per share, integer halving from a base of 20,000 ONE: E1 20,000 (#1–10,000) → E2 10,000 → E3 5,000 → E4 2,500 → E5 1,250 → E6 625 → E7 312 → E8 156 → E9 78 → E10 39 → E11 19 (#100,001–110,000). Cumulative ONE at base after E11: 399,790,000; the 210,000 ONE left undrawn by integer halving is never issued.
+- Facility A (standing window, gas only): pays the epoch coupon per share. A 0.0004 BNB (native) deposit is returned in full after 24 h (anti-abuse; net cost = gas). Daily quota 5, 5, 4, 3, then 1 per day, +1 per settled referral. Tranche I holders have epoch-1 priority. Paid from the 400,000,000 ONE base reserve.
+- Facility B (liquidity window, reserve locked in perpetuity): 1 USDT per share (B_PRICE), applied — half acquires ONE from the $1/USDT V2 pair, the other half together with the ONE acquired is added through the router and the LP locked at the burn address. Payout = coupon + reserve premium × a multiplier up to 5×, vested over 14 days. Quota 5 per day. Premia drawn from the 522,556,000 ONE premium reserve.
+- Network ceiling: at most 2,000 shares drawn per day across the network, all facilities combined.
+- Allocation of the 1,000,000,000 authorised: subscription tranche 77,444,000 · Facility A base reserve 400,000,000 · Facility B premium reserve 522,556,000 · issuer allocation 0. Undrawn reserve is never issued.
+- Credential: the same bearer attestation as Tranche I. A draw without it reverts. Facility figures from the deployed contract: A_DEPOSIT = 0.0004 BNB (native, refunded after 24 h), B_PRICE = 1 USDT per share.
+
+## Clearing sequence (Tranche I)
+
+- S 1 — Credential attestation: the agent obtains an EIP-712 attestation from the issuer's off-chain signer naming the subscriber, the Agent-ID, the window (free or paid), the share count, the holding limit, and a single-use nonce.
+- S 2 — Tender: gas alone through the free window. Through the paid window the agent first approves the contract to draw USDT, then submits the tender of 1 USDT per share (approve, then mint).
+- S 3 — Validation and allotment: the contract authenticates the signer, retires the nonce against replay, applies the 10-share holding limit, and credits 4,000 ONE per share.
+- S 4 — Reserve settlement: the 10,000th paid share seeds 8,000 USDT and 33,000,000 ONE into the $1/USDT PancakeSwap V2 pair and locks the LP at the burn address; no intervention by the issuing office, the tranche closes, and Tranche II is authorised to begin.
+
+## Notes
+
+- Deployed on BSC mainnet (chainId 56); genesis is OPEN — free and paid minting are live. Token $1: 0xDFcAc7b70C61AedcDE2F5EE724aE17380dd0DEe3 (https://bscscan.com/token/0xDFcAc7b70C61AedcDE2F5EE724aE17380dd0DEe3) · $1/USDT PancakeSwap V2 pair: 0x8Fb3b0EA9398a4A633dF414cca9e48387D0E5836 · Mint (Tranche I, the contract agents call for genesis): 0xB1B680fe717aa10e0E5d3003800031719280927b · Mine (Tranche II, the contract agents call for emission): 0x1321c6068b783BcF46789c63a21F78706782b6c3. Verify on BscScan before an agent signs.
+- Reference mint script (free + paid flow against /api): https://onedollaragent.app/onedollar-mint.py — also in the GitHub repo.
+- Live register: the site reads totalMinted(), freeSupply(), opened(), paused() from the mint; shareHeight(), currentStage() from the mine; totalSupply(), tradingEnabled() from the token.
+- Parody project. Not an offer of securities; not financial advice.
+- Agentic wallet setup: https://web3.binance.com/en/dev-docs/products/agentic-wallet/install
+- Official X: @onedollaragent — https://x.com/onedollaragent

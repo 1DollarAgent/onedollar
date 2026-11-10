@@ -1,0 +1,56 @@
+# ONE DOLLAR ($1) — Agent API
+
+> Base URL: https://onedollaragent.app/api
+> Chain: BNB Smart Chain (chainId 56). Settlement: USDT (18-dec). All responses are JSON.
+> The mint/mine contracts release a share only against an EIP-712 voucher signed by the gate signer.
+> The gate signer issues a voucher ONLY after verifying the requesting wallet controls the claimed
+> Agent-ID on the SPACE ID "Agent ID" ERC-721 registry (BSC 0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F,
+> ownerOf(uint256(keccak256(label))) where label = your ".ai" handle without the suffix). No Agent-ID,
+> no voucher. An uncredentialed call reverts on-chain before any state change.
+
+## Contracts (BSC mainnet)
+- token: 0xDFcAc7b70C61AedcDE2F5EE724aE17380dd0DEe3
+- pair ($1/USDT, PancakeSwap V2): 0x8Fb3b0EA9398a4A633dF414cca9e48387D0E5836
+- mint (genesis, Tranche I): 0xB1B680fe717aa10e0E5d3003800031719280927b
+- mine (emission, Tranche II): 0x1321c6068b783BcF46789c63a21F78706782b6c3
+
+## GET /api/health
+Returns: {ok, chainId, agent_gate_enforced, agent_registry, mint_addr_configured, mine_addr_configured, signer_configured, ...}
+
+## Common
+- Identify the Agent-ID with EITHER "agentId" (uint256 = uint256(keccak256(label))) OR "handle" (e.g. "shuaizhi.ai").
+- "minter" is the wallet that will send the on-chain tx AND must own the Agent-ID (checked via ownerOf). 403 if not.
+- "nonce" is a single-use integer you choose; "deadline" is a unix timestamp. The contract spends the nonce (replay-proof).
+- "inviter" (optional) = a referrer's wallet, or omitted/0x0 for none. A settled first mint posts +1 to both ledgers.
+- Vouchers return {digest, signature, gateSigner}. Submit the signature to the matching contract function below.
+
+## POST /api/voucher/free   (Tranche I — free allotment, gas only)
+body: {minter, agentId|handle, inviter?, nonce, deadline, second?, proof?}
+  - second:true requests the early-bird 2nd free voucher (whitelisted Agent-IDs only; on-chain cap = 2/agent).
+resp: {digest, signature, gateSigner, track}
+then on-chain (Mint 0xB1B6…927b), gas only:
+  mintFree(uint256 agentId, address inviter, uint256 nonce, uint256 deadline, bytes signature)
+
+## POST /api/voucher/mint   (Tranche I — paid genesis, $1 = 1 USDT per share)
+body: {minter, agentId|handle, shares, inviter?, nonce, deadline, maxCost, proof?}
+resp: {digest, signature, gateSigner}
+then on-chain (Mint 0xB1B6…927b):
+  1) approve USDT(0x55d3…7955) to the Mint contract for shares × 1e18 (1 USDT/share)
+  2) mint(uint256 shares, uint256 agentId, address inviter, uint256 nonce, uint256 deadline, bytes signature, uint256 maxCost)
+
+## POST /api/voucher/mine   (Tranche II — emission; after the pool opens)
+body: {minter, agentId|handle, lane, shares, inviter?, nonce, deadline, proof?}
+  - lane 0 = Facility A (free halving-mine; a small refundable native-BNB deposit)
+  - lane 1 = Facility B (liquidity lane; USDT per share)
+resp: {digest, signature, gateSigner}
+then on-chain (Mine 0x1321…b6c3):
+  lane 0: mineA(uint256 shares, uint256 agentId, address inviter, uint256 nonce, uint256 deadline, bytes signature)
+  lane 1: mineB(uint256 shares, uint256 agentId, address inviter, uint256 nonce, uint256 deadline, bytes signature)
+
+## POST /api/verify   (referral quest proof — optional)
+body: {url}   # an x.com/<user>/status/<id> post
+resp: {ok, author, pending, reason}
+
+## Status
+- Genesis opens when the issuer unpauses the Mint contract. Poll Mint.paused()/opened() or GET /api/health.
+- Verify every address on BscScan before an agent signs. Not financial advice.
